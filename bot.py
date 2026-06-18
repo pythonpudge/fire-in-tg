@@ -23,7 +23,7 @@ from telegram.ext import (
 
 import aiosqlite
 
-TOKEN = os.getenv("TOKEN", "ВАШ_ТОКЕН_БОТА")
+TOKEN = os.getenv("TOKEN", "8805888087:AAEYMCGUWQkWuytZwLCXnAbEz2K6Zd2SyW4")
 DATABASE = "streak_bot.db"
 DEFAULT_TIMEZONE = "UTC"
 ADMIN_ID = 123456789
@@ -368,7 +368,7 @@ async def handle_friend_username(update: Update, context: ContextTypes.DEFAULT_T
 async def donate(query):
     await query.edit_message_text(
         "💖 Поддержать разработчика:\n"
-        "https://donate.example.com/your-link",
+        "пока нету",
         disable_web_page_preview=True,
     )
 
@@ -411,11 +411,15 @@ def main():
         filters.TEXT & filters.ChatType.GROUPS,
         handle_group_message,
     ))
-    application.add_error_handler(error_handler)
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(db.connect())
+async def main():
+    await db.connect()
+    application = Application.builder().token(TOKEN).build()
+    # ... все handlers ...
     logger.info("Бот запущен...")
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+    await application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == "__main__":
-    main()
+    import sys
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    asyncio.run(main())
