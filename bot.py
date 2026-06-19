@@ -17,6 +17,15 @@ logging.basicConfig(level=logging.INFO)
 bot = Bot(token=TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
 
+class WriteMessage(StatesGroup):
+    choosing_recipient = State() # Выбор получателя
+    writing_text = State()       # Написание текста
+
+# Хранилище состояний (в памяти)
+storage = MemoryStorage()
+bot = Bot(token="8805888087:AAEYMCGUWQkWuytZwLCXnAbEz2K6Zd2SyW4")
+dp = Dispatcher(storage=storage)
+
 # --- База данных ---
 def init_db():
     conn = sqlite3.connect('streaks.db')
@@ -113,6 +122,53 @@ async def show_streaks(call: types.CallbackQuery):
     for name, count in results:
         text += f"🔥 С @{name}: {count} дней\n"
     await call.message.answer(text)
+    # Пример данных получателей
+RECIPIENTS = {
+    "user_1": 123456789, # ID в Telegram
+    "user_2": 987654321
+}
+# 1. Кнопка "Мои огоньки"
+@dp.message(F.text == "Мои огоньки")
+async def cmd_my_lights(message: Message, state: FSMContext):
+    await message.answer("Кому вы хотите написать?", reply_markup=get_recipients_kb())
+    await state.set_state(WriteMessage.choosing_recipient)
+
+# 2. Обработка выбора получателя (callback)
+@dp.callback_query(WriteMessage.choosing_recipient, F.data.startswith("send_to_"))
+async def process_recipient(callback: CallbackQuery, state: FSMContext):
+    recipient_key = callback.data.split("_")[-1] # Получаем user_1 или user_2
+    
+    # Сохраняем ID получателя в контекст состояния
+    await state.update_data(chosen_recipient_id=RECIPIENTS[f"user_{recipient_key}"])
+    
+    await callback.message.answer("Введите текст сообщения:")
+    await state.set_state(WriteMessage.writing_text)
+    await callback.answer()
+
+# 3. Обработка самого текста сообщения
+@dp.message(WriteMessage.writing_text)
+async def process_text_message(message: Message, state: FSMContext):
+    data = await state.get_data()
+    recipient_id = data.get("chosen_recipient_id")
+    
+    # Отправляем сообщение получателю
+    try:
+        await bot.send_message(chat_id=recipient_id, text=f"Вам сообщение: {message.text}")
+        await message.answer("Сообщение успешно отправлено!")
+    except Exception as e:
+        await message.answer(f"Ошибка при отправке: {e}")
+    
+    # Сбрасываем состояние
+    await state.clear()
+
+
+def get_recipients_kb():
+    builder = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Алиса", callback_data="send_to_user_1")],
+        [InlineKeyboardButton(text="Боб", callback_data="send_to_user_2")]
+    ])
+    return builder
+
 
 @dp.callback_query(F.data == "donate")
 async def donate_cmd(call: types.CallbackQuery):
