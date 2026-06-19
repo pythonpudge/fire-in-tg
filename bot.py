@@ -11,7 +11,6 @@ from aiogram.fsm.storage.memory import MemoryStorage
 import aiosqlite
 
 # --- КОНФИГУРАЦИЯ ---
-TOKEN = "ВАШ_ТОКЕН_БОТА"
 TOKEN = "8805888087:AAEYMCGUWQkWuytZwLCXnAbEz2K6Zd2SyW4"
 TIMEZONE = ZoneInfo('Europe/Moscow')
 logging.basicConfig(level=logging.INFO)
