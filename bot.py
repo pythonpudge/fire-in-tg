@@ -11,7 +11,7 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.storage.memory import MemoryStorage
 
 # Настройка
-TOKEN = "ТВОЙ_ТОКЕН"
+TOKEN = "8805888087:AAEYMCGUWQkWuytZwLCXnAbEz2K6Zd2SyW4"
 TIMEZONE = ZoneInfo('Europe/Moscow')
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=TOKEN)
